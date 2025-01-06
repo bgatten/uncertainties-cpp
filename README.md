@@ -1,6 +1,6 @@
 # Uncertainties Library
 
-This project provides a C++ implementation of a `ufloat` class for handling values with uncertainties, similar to Python's `uncertainties` package. The `ufloat` class supports automatic error propagation for arithmetic operations.
+This project provides a C++ implementation of a `udouble` class for handling values with uncertainties, similar to Python's `uncertainties` package. The `udouble` class supports automatic error propagation for arithmetic operations.
 
 ## Features
 
