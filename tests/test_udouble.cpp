@@ -21,6 +21,19 @@ TEST(udoubleTest, Multiplication) {
     EXPECT_NEAR(d.stddev(), 0.282843, 1e-6);    // Check standard deviation
 }
 
+TEST(udoubleTest, MultiplicationWithDouble) {
+    uncertainties::udouble a(1.0, 0.1);
+    double b = 2.0;
+
+    uncertainties::udouble d = a * b;
+    uncertainties::udouble e = b * a;
+
+    EXPECT_NEAR(d.nominal_value(), 2.0, 1e-12); // Check nominal value
+    EXPECT_NEAR(d.stddev(), 0.2, 1e-6);    // Check standard deviation
+    EXPECT_NEAR(e.nominal_value(), 2.0, 1e-12); // Check nominal value
+    EXPECT_NEAR(e.stddev(), 0.2, 1e-6);    // Check standard deviation
+}
+
 TEST(udoubleTest, Division) {
     uncertainties::udouble a(1.0, 0.1);
     uncertainties::udouble b(2.0, 0.2);
@@ -29,6 +42,19 @@ TEST(udoubleTest, Division) {
 
     EXPECT_NEAR(e.nominal_value(), 0.5, 1e-12); // Check nominal value
     EXPECT_NEAR(e.stddev(), 0.070711, 1e-6);    // Check standard deviation
+}
+
+TEST(udoubleTest, DivisionWithDouble) {
+    uncertainties::udouble a(1.0, 0.1);
+    double b = 2.0;
+
+    uncertainties::udouble e = a / b;
+    uncertainties::udouble f = b / a;
+
+    EXPECT_NEAR(e.nominal_value(), 0.5, 1e-12); // Check nominal value
+    EXPECT_NEAR(e.stddev(), 0.05, 1e-6);    // Check standard deviation
+    EXPECT_NEAR(f.nominal_value(), 2.0, 1e-12); // Check nominal value
+    EXPECT_NEAR(f.stddev(), 0.2, 1e-6);    // Check standard deviation
 }
 
 TEST(udoubleTest, Subtraction) {

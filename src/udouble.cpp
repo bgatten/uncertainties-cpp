@@ -35,25 +35,15 @@ udouble operator*(const udouble& lhs, const udouble& rhs)
     return udouble(new_nominal, new_stddev);
 }
 
-// udouble operator*(const udouble& lhs, const double& rhs)
-// {
-//     return udouble(lhs.nominal_ * rhs, lhs.stddev_ * rhs);
-// }
+udouble operator*(const udouble& lhs, const double& rhs)
+{
+    return udouble(lhs.nominal_ * rhs, lhs.stddev_ * std::abs(rhs));
+}
 
-// udouble operator*(const double& lhs, const udouble& rhs)
-// {
-//     return udouble(lhs * rhs.nominal_, lhs * rhs.stddev_);
-// }
-
-// udouble operator*(const udouble& lhs, const float& rhs)
-// {
-//     return udouble(lhs.nominal_ * rhs, lhs.stddev_ * rhs);
-// }
-
-// udouble operator*(const float& lhs, const udouble& rhs)
-// {
-//     return udouble(lhs * rhs.nominal_, lhs * rhs.stddev_);
-// }
+udouble operator*(const double& lhs, const udouble& rhs)
+{
+    return udouble(lhs * rhs.nominal_, abs(lhs) * rhs.stddev_);
+}
 
 // Division
 udouble operator/(const udouble& lhs, const udouble& rhs)
@@ -69,6 +59,22 @@ udouble operator/(const udouble& lhs, const udouble& rhs)
         (rhs.stddev_ / rhs.nominal_) * (rhs.stddev_ / rhs.nominal_)
     );
     return udouble(new_nominal, new_stddev);
+}
+
+udouble operator/(const udouble& lhs, const double& rhs)
+{
+    if (rhs == 0.0) {
+        throw std::runtime_error("Division by zero in udouble.");
+    }
+    return udouble(lhs.nominal_ / rhs, lhs.stddev_ / std::abs(rhs));
+}
+
+udouble operator/(const double& lhs, const udouble& rhs)
+{
+    if (rhs.nominal_ == 0.0) {
+        throw std::runtime_error("Division by zero in udouble.");
+    }
+    return udouble(lhs / rhs.nominal_, abs(lhs) * rhs.stddev_ / (rhs.nominal_ * rhs.nominal_));
 }
 
 // // Power

@@ -47,11 +47,23 @@ public:
     // Multiplication
     friend udouble operator*(const udouble& lhs, const udouble& rhs);
 
+    friend udouble operator*(const double& lhs, const udouble& rhs);
+
+    friend udouble operator*(const udouble& lhs, const double& rhs);
+
     // Division
     friend udouble operator/(const udouble& lhs, const udouble& rhs);
 
-    // // Power
+    friend udouble operator/(const udouble& lhs, const double& rhs);
+
+    friend udouble operator/(const double& lhs, const udouble& rhs);
+    
+    // Power
     // friend udouble operator**(const udouble& lhs, const udouble& rhs);
+
+    // friend udouble operator**(const udouble& lhs, const double& rhs);
+
+    // friend udouble operator**(const double& lhs, const udouble& rhs);
 
 };
 
