@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 # ----------------------------------------------------
 project(uncertainties
     VERSION 0.1.0
-    DESCRIPTION "C++ library providing a ufloat type for uncertainty propagation"
+    DESCRIPTION "C++ library providing a udouble type for uncertainty propagation"
     LANGUAGES CXX
 )
 
@@ -23,12 +23,12 @@ option(UNCERTAINTIES_BUILD_EXAMPLES "Build example programs"   ON)
 # ----------------------------------------------------
 #  Library Target
 # ----------------------------------------------------
-# Create a library named 'uncertainties' from your ufloat.cpp source
+# Create a library named 'uncertainties' from your udouble.cpp source
 add_library(uncertainties
-    src/ufloat.cpp
+    src/udouble.cpp
 )
 
-# Let users #include "uncertainties/ufloat.hpp" from <project>/include
+# Let users #include "uncertainties/udouble.hpp" from <project>/include
 target_include_directories(uncertainties
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -45,16 +45,16 @@ if (UNCERTAINTIES_BUILD_TESTS)
     # You can also use Catch2, doctest, etc. in a similar way.
     find_package(GTest CONFIG QUIET)
     if (GTest_FOUND)
-        add_executable(test_ufloat tests/test_ufloat.cpp)
-        target_link_libraries(test_ufloat PRIVATE
+        add_executable(test_udouble tests/test_udouble.cpp)
+        target_link_libraries(test_udouble PRIVATE
             GTest::gtest_main
             uncertainties
         )
-        add_test(NAME test_ufloat COMMAND test_ufloat)
+        add_test(NAME test_udouble COMMAND test_udouble)
         # Custom target to run tests automatically after build
         add_custom_target(run_tests ALL
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CMAKE_BUILD_PARALLEL_LEVEL}
-        DEPENDS test_ufloat
+        DEPENDS test_udouble
         )
     else()
         message(STATUS "GTest not found. No tests will be built.")

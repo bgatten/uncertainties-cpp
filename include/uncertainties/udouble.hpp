@@ -1,5 +1,5 @@
-#ifndef UNCERTAINTIES_UFLOAT_HPP
-#define UNCERTAINTIES_UFLOAT_HPP
+#ifndef UNCERTAINTIES_udouble_HPP
+#define UNCERTAINTIES_udouble_HPP
 
 #include <cmath>
 #include <stdexcept>
@@ -7,11 +7,14 @@
 
 namespace uncertainties {
 
-class ufloat {
+class udouble {
+private:
+    double nominal_;
+    double stddev_;
 public:
     // Constructors
-    ufloat() : nominal_(0.0), stddev_(0.0) {}
-    ufloat(double nominal, double stddev)
+    udouble() : nominal_(0.0), stddev_(0.0) {}
+    udouble(double nominal, double stddev)
         : nominal_(nominal), stddev_(stddev)
     {
         if (stddev < 0.0) {
@@ -36,24 +39,24 @@ public:
     // ------------------
 
     // Addition
-    friend ufloat operator+(const ufloat& lhs, const ufloat& rhs);
+    friend udouble operator+(const udouble& lhs, const udouble& rhs);
 
     // Subtraction
-    friend ufloat operator-(const ufloat& lhs, const ufloat& rhs);
+    friend udouble operator-(const udouble& lhs, const udouble& rhs);
 
     // Multiplication
-    friend ufloat operator*(const ufloat& lhs, const ufloat& rhs);
+    friend udouble operator*(const udouble& lhs, const udouble& rhs);
 
     // Division
-    friend ufloat operator/(const ufloat& lhs, const ufloat& rhs);
+    friend udouble operator/(const udouble& lhs, const udouble& rhs);
 
-private:
-    double nominal_;
-    double stddev_;
+    // // Power
+    // friend udouble operator**(const udouble& lhs, const udouble& rhs);
+
 };
 
-// Optional: Overload << to print the ufloat more easily
-inline std::ostream& operator<<(std::ostream& os, const ufloat& val)
+// Optional: Overload << to print the udouble more easily
+inline std::ostream& operator<<(std::ostream& os, const udouble& val)
 {
     os << val.nominal_value() << " ± " << val.stddev();
     return os;
@@ -61,4 +64,4 @@ inline std::ostream& operator<<(std::ostream& os, const ufloat& val)
 
 } // namespace uncertainties
 
-#endif // UNCERTAINTIES_UFLOAT_HPP
+#endif // UNCERTAINTIES_udouble_HPP

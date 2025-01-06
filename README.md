@@ -63,17 +63,17 @@ cmake --build . --target run_tests
 
 ### Example: Basic Usage
 
-Here’s an example of how to use the `ufloat` class:
+Here’s an example of how to use the `udouble` class:
 
 ```cpp
 #include <iostream>
-#include "uncertainties/ufloat.hpp"
+#include "uncertainties/udouble.hpp"
 
 int main() {
-    uncertainties::ufloat a(1.0, 0.1); // 1.0 ± 0.1
-    uncertainties::ufloat b(2.0, 0.2); // 2.0 ± 0.2
+    uncertainties::udouble a(1.0, 0.1); // 1.0 ± 0.1
+    uncertainties::udouble b(2.0, 0.2); // 2.0 ± 0.2
 
-    uncertainties::ufloat c = a + b; // 3.0 ± sqrt(0.1^2 + 0.2^2)
+    uncertainties::udouble c = a + b; // 3.0 ± sqrt(0.1^2 + 0.2^2)
 
     std::cout << "c = " << c << std::endl; // Output: 3.0 ± 0.223606
 
