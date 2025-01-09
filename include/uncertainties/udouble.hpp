@@ -59,7 +59,7 @@ public:
     friend udouble operator/(const double& lhs, const udouble& rhs);
     
     // Power
-    // friend udouble operator**(const udouble& lhs, const udouble& rhs);
+    friend udouble pow(const udouble& base, const udouble& exponent);
 
     // friend udouble operator**(const udouble& lhs, const double& rhs);
 

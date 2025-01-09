@@ -67,12 +67,12 @@ TEST(udoubleTest, Subtraction) {
     EXPECT_NEAR(c.stddev(), 0.223606, 1e-6);    // Check standard deviation
 }
 
-// TEST(udoubleTest, Power) {
-//     uncertainties::udouble a(1.0, 0.1);
-//     uncertainties::udouble b(2.0, 0.2);
+TEST(udoubleTest, Power) {
+    uncertainties::udouble a(3.0, 0.1);
+    uncertainties::udouble b(2.0, 0.2);
 
-//     uncertainties::udouble c = a ** b;
+    uncertainties::udouble c = pow(a,b); //a ^ b
 
-//     EXPECT_NEAR(c.nominal_value(), 1.0, 1e-12); // Check nominal value
-//     EXPECT_NEAR(c.stddev(), 0.223606, 1e-6);    // Check standard deviation
-// }
+    EXPECT_NEAR(c.nominal_value(), 9.0, 1e-12);
+    EXPECT_NEAR(c.stddev(), 2.0665223, 1e-6);
+}
