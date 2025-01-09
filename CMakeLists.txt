@@ -26,6 +26,7 @@ option(UNCERTAINTIES_BUILD_EXAMPLES "Build example programs"   ON)
 # Create a library named 'uncertainties' from your udouble.cpp source
 add_library(uncertainties
     src/udouble.cpp
+    src/umath.cpp
 )
 
 # Let users #include "uncertainties/udouble.hpp" from <project>/include
@@ -46,15 +47,21 @@ if (UNCERTAINTIES_BUILD_TESTS)
     find_package(GTest CONFIG QUIET)
     if (GTest_FOUND)
         add_executable(test_udouble tests/test_udouble.cpp)
+        add_executable(test_umath tests/test_umath.cpp)
         target_link_libraries(test_udouble PRIVATE
             GTest::gtest_main
             uncertainties
         )
+        target_link_libraries(test_umath PRIVATE    
+            GTest::gtest_main
+            uncertainties
+        )
         add_test(NAME test_udouble COMMAND test_udouble)
+        add_test(NAME test_umath COMMAND test_umath)
         # Custom target to run tests automatically after build
         add_custom_target(run_tests ALL
         COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CMAKE_BUILD_PARALLEL_LEVEL}
-        DEPENDS test_udouble
+        DEPENDS test_udouble test_umath
         )
     else()
         message(STATUS "GTest not found. No tests will be built.")
