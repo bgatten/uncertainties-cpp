@@ -5,6 +5,7 @@ This project provides a C++ implementation of a `udouble` class for handling val
 ## Features
 
 - Create objects with nominal values and standard deviations.
+- Implicit conversion from `double` (zero uncertainty).
 - Arithmetic operations (`+`, `-`, `*`, `/`) with automatic error propagation.
 - Unary operators (`+`, `-`).
 - Compound assignment operators (`+=`, `-=`, `*=`, `/=`).
@@ -13,10 +14,13 @@ This project provides a C++ implementation of a `udouble` class for handling val
 - Exponentiation with `pow()`.
 - Mathematical functions:
   - Trigonometric: `sin()`, `cos()`, `tan()`
-  - Inverse trigonometric: `asin()`, `acos()`, `atan()`
+  - Inverse trigonometric: `asin()`, `acos()`, `atan()`, `atan2()`
   - Hyperbolic: `sinh()`, `cosh()`, `tanh()`
+  - Inverse hyperbolic: `asinh()`, `acosh()`, `atanh()`
   - Exponential/logarithmic: `exp()`, `log()`, `log10()`, `sqrt()`
-- Output values in the format "value ± uncertainty".
+  - Other: `abs()`, `hypot()`
+- Multiple output formats: default, scientific notation, compact notation.
+- `constexpr` support for compile-time evaluation.
 - Includes unit tests and examples.
 
 ## Installation
@@ -157,6 +161,58 @@ int main() {
     }
 
     std::cout << "c = " << c << std::endl;
+
+    return 0;
+}
+```
+
+### Example: Implicit Conversion
+
+Plain `double` values are automatically converted to `udouble` with zero uncertainty:
+
+```cpp
+#include <iostream>
+#include "uncertainties/udouble.hpp"
+
+int main() {
+    uncertainties::udouble a(5.0, 0.1);
+
+    // Implicit conversion from double
+    uncertainties::udouble b = 3.0;  // 3.0 ± 0.0
+
+    // Works in arithmetic too
+    uncertainties::udouble c = a + 2.0;  // Adds constant with no additional uncertainty
+
+    // Can pass doubles to functions expecting udouble
+    auto square = [](const uncertainties::udouble& x) { return x * x; };
+    uncertainties::udouble d = square(4.0);  // 16.0 ± 0.0
+
+    return 0;
+}
+```
+
+### Example: Output Formatting
+
+The library provides multiple ways to format output:
+
+```cpp
+#include <iostream>
+#include "uncertainties/udouble.hpp"
+
+int main() {
+    uncertainties::udouble x(1.23456, 0.00789);
+
+    // Default stream output
+    std::cout << x << std::endl;  // 1.23456 ± 0.00789
+
+    // Custom precision
+    std::cout << x.to_string(3) << std::endl;  // 1.23 ± 0.00789
+
+    // Scientific notation
+    std::cout << x.to_scientific(2) << std::endl;  // 1.23e+00 ± 7.89e-03
+
+    // Compact notation (uncertainty in parentheses)
+    std::cout << x.to_compact() << std::endl;  // 1.235(79)
 
     return 0;
 }

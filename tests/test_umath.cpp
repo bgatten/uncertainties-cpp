@@ -63,6 +63,20 @@ TEST(umathTest, Atan) {
     EXPECT_NEAR(result.stddev(), 0.1 / (1.0 + 1.0 * 1.0), 1e-6);
 }
 
+TEST(umathTest, Atan2) {
+    uncertainties::udouble y(3.0, 0.1);
+    uncertainties::udouble x(4.0, 0.2);
+
+    uncertainties::udouble result = uncertainties::atan2(y, x);
+
+    double xv = 4.0, yv = 3.0;
+    double denom = xv * xv + yv * yv;  // 25
+    double expected_stddev = std::sqrt(xv * xv * 0.1 * 0.1 + yv * yv * 0.2 * 0.2) / denom;
+
+    EXPECT_NEAR(result.nominal_value(), std::atan2(3.0, 4.0), 1e-12);
+    EXPECT_NEAR(result.stddev(), expected_stddev, 1e-6);
+}
+
 // Hyperbolic functions
 
 TEST(umathTest, Sinh) {
@@ -91,6 +105,35 @@ TEST(umathTest, Tanh) {
     double cosh_x = std::cosh(1.0);
     EXPECT_NEAR(result.nominal_value(), std::tanh(1.0), 1e-12);
     EXPECT_NEAR(result.stddev(), 0.1 / (cosh_x * cosh_x), 1e-6);
+}
+
+// Inverse hyperbolic functions
+
+TEST(umathTest, Asinh) {
+    uncertainties::udouble x(1.0, 0.1);
+
+    uncertainties::udouble result = uncertainties::asinh(x);
+
+    EXPECT_NEAR(result.nominal_value(), std::asinh(1.0), 1e-12);
+    EXPECT_NEAR(result.stddev(), 0.1 / std::sqrt(1.0 + 1.0 * 1.0), 1e-6);
+}
+
+TEST(umathTest, Acosh) {
+    uncertainties::udouble x(2.0, 0.1);
+
+    uncertainties::udouble result = uncertainties::acosh(x);
+
+    EXPECT_NEAR(result.nominal_value(), std::acosh(2.0), 1e-12);
+    EXPECT_NEAR(result.stddev(), 0.1 / std::sqrt(2.0 * 2.0 - 1.0), 1e-6);
+}
+
+TEST(umathTest, Atanh) {
+    uncertainties::udouble x(0.5, 0.1);
+
+    uncertainties::udouble result = uncertainties::atanh(x);
+
+    EXPECT_NEAR(result.nominal_value(), std::atanh(0.5), 1e-12);
+    EXPECT_NEAR(result.stddev(), 0.1 / (1.0 - 0.5 * 0.5), 1e-6);
 }
 
 // Exponential and logarithmic functions
@@ -171,4 +214,72 @@ TEST(umathTest, AcosWithInvalidInput) {
     EXPECT_THROW({
         uncertainties::acos(x);
     }, std::invalid_argument);
+}
+
+TEST(umathTest, AcoshWithInvalidInput) {
+    uncertainties::udouble x(0.5, 0.1);  // Must be >= 1
+
+    EXPECT_THROW({
+        uncertainties::acosh(x);
+    }, std::invalid_argument);
+}
+
+TEST(umathTest, AtanhWithInvalidInput) {
+    uncertainties::udouble x(1.5, 0.1);  // Must be in (-1, 1)
+
+    EXPECT_THROW({
+        uncertainties::atanh(x);
+    }, std::invalid_argument);
+}
+
+TEST(umathTest, Atan2AtOrigin) {
+    uncertainties::udouble x(0.0, 0.1);
+    uncertainties::udouble y(0.0, 0.1);
+
+    EXPECT_THROW({
+        uncertainties::atan2(y, x);
+    }, std::invalid_argument);
+}
+
+// Other mathematical functions
+
+TEST(umathTest, Abs) {
+    uncertainties::udouble x(-3.0, 0.1);
+
+    uncertainties::udouble result = uncertainties::abs(x);
+
+    EXPECT_NEAR(result.nominal_value(), 3.0, 1e-12);
+    EXPECT_NEAR(result.stddev(), 0.1, 1e-12);
+}
+
+TEST(umathTest, AbsPositive) {
+    uncertainties::udouble x(3.0, 0.1);
+
+    uncertainties::udouble result = uncertainties::abs(x);
+
+    EXPECT_NEAR(result.nominal_value(), 3.0, 1e-12);
+    EXPECT_NEAR(result.stddev(), 0.1, 1e-12);
+}
+
+TEST(umathTest, Hypot) {
+    uncertainties::udouble x(3.0, 0.1);
+    uncertainties::udouble y(4.0, 0.2);
+
+    uncertainties::udouble result = uncertainties::hypot(x, y);
+
+    double expected_nominal = 5.0;  // sqrt(9 + 16)
+    double expected_stddev = std::sqrt(9.0 * 0.01 + 16.0 * 0.04) / 5.0;
+
+    EXPECT_NEAR(result.nominal_value(), expected_nominal, 1e-12);
+    EXPECT_NEAR(result.stddev(), expected_stddev, 1e-6);
+}
+
+TEST(umathTest, HypotAtOrigin) {
+    uncertainties::udouble x(0.0, 0.1);
+    uncertainties::udouble y(0.0, 0.2);
+
+    uncertainties::udouble result = uncertainties::hypot(x, y);
+
+    EXPECT_NEAR(result.nominal_value(), 0.0, 1e-12);
+    EXPECT_NEAR(result.stddev(), std::sqrt(0.01 + 0.04), 1e-6);
 }

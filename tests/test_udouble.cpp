@@ -263,3 +263,117 @@ TEST(udoubleTest, DefaultConstructor) {
     EXPECT_NEAR(a.nominal_value(), 0.0, 1e-12);
     EXPECT_NEAR(a.stddev(), 0.0, 1e-12);
 }
+
+// Implicit conversion from double
+
+TEST(udoubleTest, ImplicitConversionFromDouble) {
+    uncertainties::udouble a = 3.14;
+
+    EXPECT_NEAR(a.nominal_value(), 3.14, 1e-12);
+    EXPECT_NEAR(a.stddev(), 0.0, 1e-12);
+}
+
+TEST(udoubleTest, ImplicitConversionInArithmetic) {
+    uncertainties::udouble a(1.0, 0.1);
+
+    // Adding a plain double should work via implicit conversion
+    uncertainties::udouble b = a + 2.0;
+
+    EXPECT_NEAR(b.nominal_value(), 3.0, 1e-12);
+    EXPECT_NEAR(b.stddev(), 0.1, 1e-6);  // Only a has uncertainty
+}
+
+TEST(udoubleTest, ImplicitConversionInFunction) {
+    // This tests that functions accepting udouble can take double
+    auto square = [](const uncertainties::udouble& x) {
+        return x * x;
+    };
+
+    uncertainties::udouble result = square(3.0);
+
+    EXPECT_NEAR(result.nominal_value(), 9.0, 1e-12);
+    EXPECT_NEAR(result.stddev(), 0.0, 1e-12);
+}
+
+// Constexpr tests
+
+TEST(udoubleTest, ConstexprDefaultConstructor) {
+    constexpr uncertainties::udouble a;
+
+    EXPECT_NEAR(a.nominal_value(), 0.0, 1e-12);
+    EXPECT_NEAR(a.stddev(), 0.0, 1e-12);
+}
+
+TEST(udoubleTest, ConstexprImplicitConversion) {
+    constexpr uncertainties::udouble a = 5.0;
+
+    EXPECT_NEAR(a.nominal_value(), 5.0, 1e-12);
+    EXPECT_NEAR(a.stddev(), 0.0, 1e-12);
+}
+
+TEST(udoubleTest, ConstexprGetters) {
+    constexpr uncertainties::udouble a(2.0, 0.5);
+    constexpr double nom = a.nominal_value();
+    constexpr double std = a.stddev();
+
+    EXPECT_NEAR(nom, 2.0, 1e-12);
+    EXPECT_NEAR(std, 0.5, 1e-12);
+}
+
+TEST(udoubleTest, ConstexprUnaryOperators) {
+    constexpr uncertainties::udouble a(3.0, 0.1);
+    constexpr uncertainties::udouble pos = +a;
+    constexpr uncertainties::udouble neg = -a;
+
+    EXPECT_NEAR(pos.nominal_value(), 3.0, 1e-12);
+    EXPECT_NEAR(neg.nominal_value(), -3.0, 1e-12);
+    EXPECT_NEAR(neg.stddev(), 0.1, 1e-12);
+}
+
+// Formatting tests
+
+TEST(udoubleTest, ToStringDefault) {
+    uncertainties::udouble a(1.23456789, 0.00123456);
+
+    std::string result = a.to_string();
+
+    // Default precision is 6
+    EXPECT_TRUE(result.find("1.23457") != std::string::npos ||
+                result.find("1.2345") != std::string::npos);
+    EXPECT_TRUE(result.find("±") != std::string::npos);
+}
+
+TEST(udoubleTest, ToStringPrecision) {
+    uncertainties::udouble a(1.23456789, 0.00123456);
+
+    std::string result = a.to_string(3);
+
+    EXPECT_TRUE(result.find("1.23") != std::string::npos);
+}
+
+TEST(udoubleTest, ToScientific) {
+    uncertainties::udouble a(12345.0, 67.0);
+
+    std::string result = a.to_scientific(2);
+
+    EXPECT_TRUE(result.find("e+") != std::string::npos || result.find("E+") != std::string::npos);
+}
+
+TEST(udoubleTest, ToCompact) {
+    uncertainties::udouble a(1.234, 0.056);
+
+    std::string result = a.to_compact(2);
+
+    // Should produce something like "1.234(56)" or "1.23(6)"
+    EXPECT_TRUE(result.find("(") != std::string::npos);
+    EXPECT_TRUE(result.find(")") != std::string::npos);
+}
+
+TEST(udoubleTest, ToCompactZeroUncertainty) {
+    uncertainties::udouble a(1.234, 0.0);
+
+    std::string result = a.to_compact();
+
+    // No parentheses when uncertainty is zero
+    EXPECT_TRUE(result.find("(") == std::string::npos);
+}
