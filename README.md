@@ -5,10 +5,17 @@ This project provides a C++ implementation of a `udouble` class for handling val
 ## Features
 
 - Create objects with nominal values and standard deviations.
-- Perform arithmetic operations (`+`, `-`, `*`, `/`) with automatic error propagation.
+- Arithmetic operations (`+`, `-`, `*`, `/`) with automatic error propagation.
+- Unary operators (`+`, `-`).
+- Compound assignment operators (`+=`, `-=`, `*=`, `/=`).
+- Comparison operators (`==`, `!=`, `<`, `>`, `<=`, `>=`) based on nominal values.
 - Mixed-type operations between `udouble` and `double`.
 - Exponentiation with `pow()`.
-- Mathematical functions: `sin()`, `cos()`, `exp()`, `log()`.
+- Mathematical functions:
+  - Trigonometric: `sin()`, `cos()`, `tan()`
+  - Inverse trigonometric: `asin()`, `acos()`, `atan()`
+  - Hyperbolic: `sinh()`, `cosh()`, `tanh()`
+  - Exponential/logarithmic: `exp()`, `log()`, `log10()`, `sqrt()`
 - Output values in the format "value ± uncertainty".
 - Includes unit tests and examples.
 
@@ -99,16 +106,57 @@ int main() {
     // Trigonometric functions
     uncertainties::udouble s = uncertainties::sin(x);
     uncertainties::udouble c = uncertainties::cos(x);
+    uncertainties::udouble t = uncertainties::tan(x);
+
+    // Inverse trigonometric functions
+    uncertainties::udouble as = uncertainties::asin(uncertainties::udouble(0.5, 0.01));
+    uncertainties::udouble at = uncertainties::atan(x);
+
+    // Hyperbolic functions
+    uncertainties::udouble sh = uncertainties::sinh(x);
+    uncertainties::udouble ch = uncertainties::cosh(x);
 
     // Exponential and logarithmic functions
     uncertainties::udouble e = uncertainties::exp(x);
     uncertainties::udouble l = uncertainties::log(x);
+    uncertainties::udouble sq = uncertainties::sqrt(uncertainties::udouble(4.0, 0.1));
 
     // Exponentiation
     uncertainties::udouble p = uncertainties::pow(x, uncertainties::udouble(2.0, 0.0));
 
     std::cout << "sin(x) = " << s << std::endl;
-    std::cout << "exp(x) = " << e << std::endl;
+    std::cout << "sqrt(4) = " << sq << std::endl;
+
+    return 0;
+}
+```
+
+### Example: Operators
+
+The library supports various operators for convenient calculations:
+
+```cpp
+#include <iostream>
+#include "uncertainties/udouble.hpp"
+
+int main() {
+    uncertainties::udouble a(10.0, 0.5);
+    uncertainties::udouble b(3.0, 0.2);
+
+    // Unary operators
+    uncertainties::udouble neg = -a;  // -10.0 ± 0.5
+
+    // Compound assignment
+    uncertainties::udouble c = a;
+    c += b;  // 13.0 ± sqrt(0.5² + 0.2²)
+    c *= 2.0;  // Scale by constant
+
+    // Comparison (based on nominal values)
+    if (a > b) {
+        std::cout << "a is greater than b" << std::endl;
+    }
+
+    std::cout << "c = " << c << std::endl;
 
     return 0;
 }

@@ -1,5 +1,4 @@
-#ifndef UNCERTAINTIES_udouble_HPP
-#define UNCERTAINTIES_udouble_HPP
+#pragma once
 
 #include <cmath>
 #include <stdexcept>
@@ -38,6 +37,10 @@ public:
     // Operator Overloads
     // ------------------
 
+    // Unary operators
+    udouble operator+() const { return *this; }
+    udouble operator-() const { return udouble(-nominal_, stddev_); }
+
     // Addition
     friend udouble operator+(const udouble& lhs, const udouble& rhs);
 
@@ -46,25 +49,32 @@ public:
 
     // Multiplication
     friend udouble operator*(const udouble& lhs, const udouble& rhs);
-
     friend udouble operator*(const double& lhs, const udouble& rhs);
-
     friend udouble operator*(const udouble& lhs, const double& rhs);
 
     // Division
     friend udouble operator/(const udouble& lhs, const udouble& rhs);
-
     friend udouble operator/(const udouble& lhs, const double& rhs);
-
     friend udouble operator/(const double& lhs, const udouble& rhs);
-    
+
     // Power
     friend udouble pow(const udouble& base, const udouble& exponent);
 
-    // friend udouble operator**(const udouble& lhs, const double& rhs);
+    // Compound assignment operators
+    udouble& operator+=(const udouble& rhs);
+    udouble& operator-=(const udouble& rhs);
+    udouble& operator*=(const udouble& rhs);
+    udouble& operator/=(const udouble& rhs);
+    udouble& operator*=(double rhs);
+    udouble& operator/=(double rhs);
 
-    // friend udouble operator**(const double& lhs, const udouble& rhs);
-
+    // Comparison operators (compare nominal values)
+    friend bool operator==(const udouble& lhs, const udouble& rhs);
+    friend bool operator!=(const udouble& lhs, const udouble& rhs);
+    friend bool operator<(const udouble& lhs, const udouble& rhs);
+    friend bool operator>(const udouble& lhs, const udouble& rhs);
+    friend bool operator<=(const udouble& lhs, const udouble& rhs);
+    friend bool operator>=(const udouble& lhs, const udouble& rhs);
 };
 
 // Optional: Overload << to print the udouble more easily
@@ -75,5 +85,3 @@ inline std::ostream& operator<<(std::ostream& os, const udouble& val)
 }
 
 } // namespace uncertainties
-
-#endif // UNCERTAINTIES_udouble_HPP
