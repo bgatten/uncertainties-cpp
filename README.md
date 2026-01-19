@@ -6,6 +6,9 @@ This project provides a C++ implementation of a `udouble` class for handling val
 
 - Create objects with nominal values and standard deviations.
 - Perform arithmetic operations (`+`, `-`, `*`, `/`) with automatic error propagation.
+- Mixed-type operations between `udouble` and `double`.
+- Exponentiation with `pow()`.
+- Mathematical functions: `sin()`, `cos()`, `exp()`, `log()`.
 - Output values in the format "value ± uncertainty".
 - Includes unit tests and examples.
 
@@ -22,7 +25,7 @@ This project provides a C++ implementation of a `udouble` class for handling val
 1. Clone the repository:
    ```bash
    git clone <repository_url>
-   cd uncertainties
+   cd uncertainties-cpp
    ```
 
 2. Create a build directory and configure the project:
@@ -76,6 +79,36 @@ int main() {
     uncertainties::udouble c = a + b; // 3.0 ± sqrt(0.1^2 + 0.2^2)
 
     std::cout << "c = " << c << std::endl; // Output: 3.0 ± 0.223606
+
+    return 0;
+}
+```
+
+### Example: Mathematical Functions
+
+The library provides mathematical functions with automatic error propagation:
+
+```cpp
+#include <iostream>
+#include "uncertainties/udouble.hpp"
+#include "uncertainties/umath.hpp"
+
+int main() {
+    uncertainties::udouble x(1.0, 0.1);
+
+    // Trigonometric functions
+    uncertainties::udouble s = uncertainties::sin(x);
+    uncertainties::udouble c = uncertainties::cos(x);
+
+    // Exponential and logarithmic functions
+    uncertainties::udouble e = uncertainties::exp(x);
+    uncertainties::udouble l = uncertainties::log(x);
+
+    // Exponentiation
+    uncertainties::udouble p = uncertainties::pow(x, uncertainties::udouble(2.0, 0.0));
+
+    std::cout << "sin(x) = " << s << std::endl;
+    std::cout << "exp(x) = " << e << std::endl;
 
     return 0;
 }
