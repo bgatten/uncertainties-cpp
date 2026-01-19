@@ -1,0 +1,42 @@
+# Doxyfile for uncertainties-cpp library
+
+# Project information
+PROJECT_NAME           = "Uncertainties C++"
+PROJECT_NUMBER         = 0.2.0
+PROJECT_BRIEF          = "A C++ library for automatic error propagation"
+OUTPUT_DIRECTORY       = docs
+
+# Input settings
+INPUT                  = include src README.md
+FILE_PATTERNS          = *.hpp *.cpp *.md
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = README.md
+
+# Output settings
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+
+# Extraction settings
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+
+# Source browsing
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+# Preprocessing
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+
+# Warnings
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+
+# Graph settings (requires Graphviz)
+HAVE_DOT               = NO
+CLASS_DIAGRAMS         = YES

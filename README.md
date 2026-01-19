@@ -21,6 +21,7 @@ This project provides a C++ implementation of a `udouble` class for handling val
   - Other: `abs()`, `hypot()`
 - Multiple output formats: default, scientific notation, compact notation.
 - `constexpr` support for compile-time evaluation.
+- Eigen matrix library integration (optional).
 - Includes unit tests and examples.
 
 ## Installation
@@ -218,6 +219,41 @@ int main() {
 }
 ```
 
+### Example: Eigen Integration
+
+The library integrates with the [Eigen](https://eigen.tuxfamily.org/) matrix library for uncertainty propagation through matrix operations:
+
+```cpp
+#include <Eigen/Dense>
+#include "uncertainties/eigen_support.hpp"
+
+int main() {
+    // Type aliases for convenience
+    using Matrix2u = Eigen::Matrix<uncertainties::udouble, 2, 2>;
+    using Vector2u = Eigen::Vector<uncertainties::udouble, 2>;
+
+    // Create a matrix with uncertainties
+    Matrix2u A;
+    A << uncertainties::udouble(1.0, 0.1), uncertainties::udouble(2.0, 0.2),
+         uncertainties::udouble(3.0, 0.3), uncertainties::udouble(4.0, 0.4);
+
+    // Create a vector with uncertainties
+    Vector2u b;
+    b << uncertainties::udouble(5.0, 0.5), uncertainties::udouble(6.0, 0.6);
+
+    // Matrix-vector multiplication propagates uncertainties
+    Vector2u result = A * b;
+
+    // Other operations: transpose, dot product, cross product, determinant, etc.
+    Matrix2u At = A.transpose();
+    uncertainties::udouble det = A.determinant();
+
+    return 0;
+}
+```
+
+To enable Eigen support, ensure Eigen3 is installed and detected by CMake. The `eigen_support.hpp` header provides the necessary `NumTraits` specialization for Eigen to work with `udouble`.
+
 ### Build and Run Example
 
 1. Enable examples in the build configuration:
@@ -230,6 +266,33 @@ int main() {
    cmake --build .
    ./example_basic
    ```
+
+## Documentation
+
+API documentation can be generated using Doxygen:
+
+1. Install Doxygen (if not already installed):
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get install doxygen
+
+   # macOS
+   brew install doxygen
+   ```
+
+2. Generate documentation:
+   ```bash
+   # From the project root directory
+   doxygen Doxyfile
+   ```
+
+   Or using CMake:
+   ```bash
+   cmake -DUNCERTAINTIES_BUILD_DOCS=ON ..
+   cmake --build . --target docs
+   ```
+
+3. Open `docs/html/index.html` in your browser.
 
 ## Contributing
 

@@ -4,6 +4,9 @@
 # Build folder
 build/
 
+# Documentation output
+docs/
+
 # Compiled Object files
 *.slo
 *.lo

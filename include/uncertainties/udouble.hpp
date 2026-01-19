@@ -1,5 +1,10 @@
 #pragma once
 
+/**
+ * @file udouble.hpp
+ * @brief Core class for values with uncertainties
+ */
+
 #include <cmath>
 #include <stdexcept>
 #include <ostream>
@@ -9,17 +14,50 @@
 
 namespace uncertainties {
 
+/**
+ * @class udouble
+ * @brief A double-precision floating-point value with associated uncertainty.
+ *
+ * The udouble class represents a value with an associated standard deviation
+ * (uncertainty). It supports automatic error propagation through arithmetic
+ * operations using first-order Taylor expansion (linear approximation).
+ *
+ * @note Uncertainties are assumed to be independent (uncorrelated).
+ *
+ * Example usage:
+ * @code
+ * uncertainties::udouble x(10.0, 0.5);  // 10.0 ± 0.5
+ * uncertainties::udouble y(20.0, 1.0);  // 20.0 ± 1.0
+ * uncertainties::udouble z = x + y;     // Automatic error propagation
+ * std::cout << z << std::endl;          // Output: 30 ± 1.11803
+ * @endcode
+ */
 class udouble {
 private:
-    double nominal_;
-    double stddev_;
+    double nominal_;  ///< The nominal (central) value
+    double stddev_;   ///< The standard deviation (uncertainty)
+
 public:
-    // Constructors
+    /// @name Constructors
+    /// @{
+
+    /**
+     * @brief Default constructor. Initializes to 0 ± 0.
+     */
     constexpr udouble() noexcept : nominal_(0.0), stddev_(0.0) {}
 
-    // Implicit conversion from double (zero uncertainty)
+    /**
+     * @brief Implicit conversion from double with zero uncertainty.
+     * @param nominal The nominal value
+     */
     constexpr udouble(double nominal) noexcept : nominal_(nominal), stddev_(0.0) {}
 
+    /**
+     * @brief Construct a udouble with specified nominal value and uncertainty.
+     * @param nominal The nominal (central) value
+     * @param stddev The standard deviation (must be non-negative)
+     * @throws std::invalid_argument if stddev is negative
+     */
     constexpr udouble(double nominal, double stddev)
         : nominal_(nominal), stddev_(stddev)
     {
@@ -28,12 +66,34 @@ public:
         }
     }
 
-    // Getters
+    /// @}
+
+    /// @name Accessors
+    /// @{
+
+    /**
+     * @brief Get the nominal (central) value.
+     * @return The nominal value
+     */
     constexpr double nominal_value() const noexcept { return nominal_; }
+
+    /**
+     * @brief Get the standard deviation (uncertainty).
+     * @return The standard deviation
+     */
     constexpr double stddev() const noexcept { return stddev_; }
 
-    // Setters (optional, if you want to allow changes after construction)
+    /**
+     * @brief Set the nominal value.
+     * @param value The new nominal value
+     */
     constexpr void set_nominal_value(double value) noexcept { nominal_ = value; }
+
+    /**
+     * @brief Set the standard deviation.
+     * @param value The new standard deviation (must be non-negative)
+     * @throws std::invalid_argument if value is negative
+     */
     void set_stddev(double value) {
         if (value < 0.0) {
             throw std::invalid_argument("Standard deviation cannot be negative.");
@@ -41,33 +101,45 @@ public:
         stddev_ = value;
     }
 
-    // Operator Overloads
-    // ------------------
+    /// @}
 
-    // Unary operators
+    /// @name Unary Operators
+    /// @{
+
+    /** @brief Unary plus (returns a copy) */
     constexpr udouble operator+() const noexcept { return *this; }
+
+    /** @brief Unary negation (negates nominal value, preserves uncertainty) */
     constexpr udouble operator-() const noexcept { return udouble(-nominal_, stddev_); }
 
-    // Addition
+    /// @}
+
+    /// @name Arithmetic Operators
+    /// @{
+
     friend udouble operator+(const udouble& lhs, const udouble& rhs);
-
-    // Subtraction
     friend udouble operator-(const udouble& lhs, const udouble& rhs);
-
-    // Multiplication
     friend udouble operator*(const udouble& lhs, const udouble& rhs);
     friend udouble operator*(const double& lhs, const udouble& rhs);
     friend udouble operator*(const udouble& lhs, const double& rhs);
-
-    // Division
     friend udouble operator/(const udouble& lhs, const udouble& rhs);
     friend udouble operator/(const udouble& lhs, const double& rhs);
     friend udouble operator/(const double& lhs, const udouble& rhs);
 
-    // Power
+    /**
+     * @brief Raise base to a power with uncertainty propagation.
+     * @param base The base (must be positive)
+     * @param exponent The exponent
+     * @return base^exponent with propagated uncertainty
+     * @throws std::runtime_error if base is not positive
+     */
     friend udouble pow(const udouble& base, const udouble& exponent);
 
-    // Compound assignment operators
+    /// @}
+
+    /// @name Compound Assignment Operators
+    /// @{
+
     udouble& operator+=(const udouble& rhs);
     udouble& operator-=(const udouble& rhs);
     udouble& operator*=(const udouble& rhs);
@@ -75,7 +147,12 @@ public:
     udouble& operator*=(double rhs);
     udouble& operator/=(double rhs);
 
-    // Comparison operators (compare nominal values)
+    /// @}
+
+    /// @name Comparison Operators
+    /// @{
+    /// @note Comparisons are based on nominal values only.
+
     friend bool operator==(const udouble& lhs, const udouble& rhs);
     friend bool operator!=(const udouble& lhs, const udouble& rhs);
     friend bool operator<(const udouble& lhs, const udouble& rhs);
@@ -83,16 +160,27 @@ public:
     friend bool operator<=(const udouble& lhs, const udouble& rhs);
     friend bool operator>=(const udouble& lhs, const udouble& rhs);
 
-    // Formatting methods
+    /// @}
 
-    // Format with specified precision: "1.234 ± 0.056"
+    /// @name Formatting Methods
+    /// @{
+
+    /**
+     * @brief Format as "value ± uncertainty" with specified precision.
+     * @param precision Number of significant digits (default: 6)
+     * @return Formatted string
+     */
     std::string to_string(int precision = 6) const {
         std::ostringstream oss;
         oss << std::setprecision(precision) << nominal_ << " ± " << stddev_;
         return oss.str();
     }
 
-    // Format in scientific notation: "1.234e+00 ± 5.600e-02"
+    /**
+     * @brief Format in scientific notation.
+     * @param precision Number of decimal places (default: 3)
+     * @return Formatted string like "1.234e+00 ± 5.600e-02"
+     */
     std::string to_scientific(int precision = 3) const {
         std::ostringstream oss;
         oss << std::scientific << std::setprecision(precision)
@@ -100,8 +188,11 @@ public:
         return oss.str();
     }
 
-    // Format in compact notation: "1.234(56)" where digits in parentheses
-    // represent uncertainty in the last digits
+    /**
+     * @brief Format in compact notation with uncertainty in parentheses.
+     * @param significant_digits Number of significant digits for uncertainty (default: 2)
+     * @return Formatted string like "1.234(56)" where 56 is the uncertainty in the last digits
+     */
     std::string to_compact(int significant_digits = 2) const {
         if (stddev_ == 0.0) {
             std::ostringstream oss;
@@ -127,9 +218,18 @@ public:
             << "(" << uncert_int << ")";
         return oss.str();
     }
+
+    /// @}
 };
 
-// Stream output operator
+/**
+ * @brief Stream output operator.
+ * @param os Output stream
+ * @param val The udouble to output
+ * @return Reference to the output stream
+ *
+ * Outputs in the format "value ± uncertainty".
+ */
 inline std::ostream& operator<<(std::ostream& os, const udouble& val)
 {
     os << val.nominal_value() << " ± " << val.stddev();
