@@ -295,40 +295,8 @@ TEST(udoubleTest, ImplicitConversionInFunction) {
     EXPECT_NEAR(result.stddev(), 0.0, 1e-12);
 }
 
-// Constexpr tests
-
-TEST(udoubleTest, ConstexprDefaultConstructor) {
-    constexpr uncertainties::udouble a;
-
-    EXPECT_NEAR(a.nominal_value(), 0.0, 1e-12);
-    EXPECT_NEAR(a.stddev(), 0.0, 1e-12);
-}
-
-TEST(udoubleTest, ConstexprImplicitConversion) {
-    constexpr uncertainties::udouble a = 5.0;
-
-    EXPECT_NEAR(a.nominal_value(), 5.0, 1e-12);
-    EXPECT_NEAR(a.stddev(), 0.0, 1e-12);
-}
-
-TEST(udoubleTest, ConstexprGetters) {
-    constexpr uncertainties::udouble a(2.0, 0.5);
-    constexpr double nom = a.nominal_value();
-    constexpr double std = a.stddev();
-
-    EXPECT_NEAR(nom, 2.0, 1e-12);
-    EXPECT_NEAR(std, 0.5, 1e-12);
-}
-
-TEST(udoubleTest, ConstexprUnaryOperators) {
-    constexpr uncertainties::udouble a(3.0, 0.1);
-    constexpr uncertainties::udouble pos = +a;
-    constexpr uncertainties::udouble neg = -a;
-
-    EXPECT_NEAR(pos.nominal_value(), 3.0, 1e-12);
-    EXPECT_NEAR(neg.nominal_value(), -3.0, 1e-12);
-    EXPECT_NEAR(neg.stddev(), 0.1, 1e-12);
-}
+// Note: constexpr tests removed - udouble is no longer a literal type
+// due to the derivative map used for correlation tracking.
 
 // Formatting tests
 

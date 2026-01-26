@@ -4,89 +4,182 @@
 
 namespace uncertainties {
 
-// Addition
+namespace {
+    // Threshold for pruning near-zero derivatives
+    constexpr double PRUNE_THRESHOLD = 1e-300;
+
+    // Helper to prune near-zero derivatives from a map
+    void prune_derivatives(udouble::DerivativeMap& derivs) {
+        for (auto it = derivs.begin(); it != derivs.end(); ) {
+            if (std::abs(it->second) < PRUNE_THRESHOLD) {
+                it = derivs.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+}
+
+// Addition: d(a+b)/dx = da/dx + db/dx
 udouble operator+(const udouble& lhs, const udouble& rhs)
 {
     double new_nominal = lhs.nominal_ + rhs.nominal_;
-    // For independent uncertainties: stddev = sqrt(σ₁² + σ₂²)
-    double new_stddev = std::sqrt(lhs.stddev_ * lhs.stddev_ + rhs.stddev_ * rhs.stddev_);
-    return udouble(new_nominal, new_stddev);
+
+    // Merge derivative maps
+    udouble::DerivativeMap new_derivs = lhs.derivatives_;
+    for (const auto& [id, deriv] : rhs.derivatives_) {
+        new_derivs[id] += deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
-// Subtraction
+// Subtraction: d(a-b)/dx = da/dx - db/dx
 udouble operator-(const udouble& lhs, const udouble& rhs)
 {
     double new_nominal = lhs.nominal_ - rhs.nominal_;
-    // For independent uncertainties: same as addition
-    double new_stddev = std::sqrt(lhs.stddev_ * lhs.stddev_ + rhs.stddev_ * rhs.stddev_);
-    return udouble(new_nominal, new_stddev);
+
+    // Merge derivative maps with subtraction
+    udouble::DerivativeMap new_derivs = lhs.derivatives_;
+    for (const auto& [id, deriv] : rhs.derivatives_) {
+        new_derivs[id] -= deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
-// Multiplication
+// Multiplication: d(a*b)/dx = b*(da/dx) + a*(db/dx)
 udouble operator*(const udouble& lhs, const udouble& rhs)
 {
     double new_nominal = lhs.nominal_ * rhs.nominal_;
-    // First-order error propagation: f = A * B
-    // σ_f = sqrt(B² * σ_A² + A² * σ_B²)
-    double new_stddev = std::sqrt(
-        rhs.nominal_ * rhs.nominal_ * lhs.stddev_ * lhs.stddev_ +
-        lhs.nominal_ * lhs.nominal_ * rhs.stddev_ * rhs.stddev_
-    );
-    return udouble(new_nominal, new_stddev);
+
+    udouble::DerivativeMap new_derivs;
+
+    // b * (da/dx)
+    for (const auto& [id, deriv] : lhs.derivatives_) {
+        new_derivs[id] += rhs.nominal_ * deriv;
+    }
+
+    // a * (db/dx)
+    for (const auto& [id, deriv] : rhs.derivatives_) {
+        new_derivs[id] += lhs.nominal_ * deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
+// Scalar multiplication: d(c*a)/dx = c * (da/dx)
 udouble operator*(const udouble& lhs, const double& rhs)
 {
-    return udouble(lhs.nominal_ * rhs, lhs.stddev_ * std::abs(rhs));
+    double new_nominal = lhs.nominal_ * rhs;
+
+    udouble::DerivativeMap new_derivs;
+    for (const auto& [id, deriv] : lhs.derivatives_) {
+        new_derivs[id] = rhs * deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
 udouble operator*(const double& lhs, const udouble& rhs)
 {
-    return udouble(lhs * rhs.nominal_, std::abs(lhs) * rhs.stddev_);
+    return rhs * lhs;
 }
 
-// Division
+// Division: d(a/b)/dx = (1/b)*(da/dx) - (a/b²)*(db/dx)
 udouble operator/(const udouble& lhs, const udouble& rhs)
 {
     if (rhs.nominal_ == 0.0) {
         throw std::runtime_error("Division by zero in udouble.");
     }
+
     double new_nominal = lhs.nominal_ / rhs.nominal_;
-    // First-order error propagation: f = A/B
-    // σ_f = (1/|B|) * sqrt(σ_A² + (A/B)² * σ_B²)
-    double ratio = new_nominal;
-    double new_stddev = std::sqrt(
-        lhs.stddev_ * lhs.stddev_ + ratio * ratio * rhs.stddev_ * rhs.stddev_
-    ) / std::abs(rhs.nominal_);
-    return udouble(new_nominal, new_stddev);
+    double inv_b = 1.0 / rhs.nominal_;
+    double a_over_b_sq = lhs.nominal_ / (rhs.nominal_ * rhs.nominal_);
+
+    udouble::DerivativeMap new_derivs;
+
+    // (1/b) * (da/dx)
+    for (const auto& [id, deriv] : lhs.derivatives_) {
+        new_derivs[id] += inv_b * deriv;
+    }
+
+    // -(a/b²) * (db/dx)
+    for (const auto& [id, deriv] : rhs.derivatives_) {
+        new_derivs[id] -= a_over_b_sq * deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
+// Scalar division: d(a/c)/dx = (1/c) * (da/dx)
 udouble operator/(const udouble& lhs, const double& rhs)
 {
     if (rhs == 0.0) {
         throw std::runtime_error("Division by zero in udouble.");
     }
-    return udouble(lhs.nominal_ / rhs, lhs.stddev_ / std::abs(rhs));
+
+    double new_nominal = lhs.nominal_ / rhs;
+    double inv_rhs = 1.0 / rhs;
+
+    udouble::DerivativeMap new_derivs;
+    for (const auto& [id, deriv] : lhs.derivatives_) {
+        new_derivs[id] = inv_rhs * deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
+// Constant divided by udouble: d(c/b)/dx = -c/b² * (db/dx)
 udouble operator/(const double& lhs, const udouble& rhs)
 {
     if (rhs.nominal_ == 0.0) {
         throw std::runtime_error("Division by zero in udouble.");
     }
-    return udouble(lhs / rhs.nominal_, std::abs(lhs) * rhs.stddev_ / (rhs.nominal_ * rhs.nominal_));
+
+    double new_nominal = lhs / rhs.nominal_;
+    double coef = -lhs / (rhs.nominal_ * rhs.nominal_);
+
+    udouble::DerivativeMap new_derivs;
+    for (const auto& [id, deriv] : rhs.derivatives_) {
+        new_derivs[id] = coef * deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
-// Power
+// Power: d(a^b)/dx = a^b * (b/a * da/dx + ln(a) * db/dx)
 udouble pow(const udouble& base, const udouble& exp)
 {
     if (base.nominal_ <= 0.0) {
         throw std::runtime_error("Base of exponentiation (base) must be positive.");
     }
+
     double new_nominal = std::pow(base.nominal_, exp.nominal_);
-    double new_stddev = std::abs(new_nominal) * std::sqrt(std::pow(exp.nominal_/base.nominal_*base.stddev_, 2)
-                                                         + std::pow(std::log(base.nominal_) * exp.stddev_, 2));
-    return udouble(new_nominal, new_stddev);
+    double coef_base = new_nominal * exp.nominal_ / base.nominal_;
+    double coef_exp = new_nominal * std::log(base.nominal_);
+
+    udouble::DerivativeMap new_derivs;
+
+    // a^b * (b/a) * (da/dx)
+    for (const auto& [id, deriv] : base.derivatives_) {
+        new_derivs[id] += coef_base * deriv;
+    }
+
+    // a^b * ln(a) * (db/dx)
+    for (const auto& [id, deriv] : exp.derivatives_) {
+        new_derivs[id] += coef_exp * deriv;
+    }
+
+    prune_derivatives(new_derivs);
+    return udouble(new_nominal, std::move(new_derivs));
 }
 
 // Compound assignment operators

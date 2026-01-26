@@ -52,6 +52,7 @@ if (UNCERTAINTIES_BUILD_TESTS)
         # Core tests
         add_executable(test_udouble tests/test_udouble.cpp)
         add_executable(test_umath tests/test_umath.cpp)
+        add_executable(test_correlation tests/test_correlation.cpp)
         target_link_libraries(test_udouble PRIVATE
             GTest::gtest_main
             uncertainties
@@ -60,11 +61,16 @@ if (UNCERTAINTIES_BUILD_TESTS)
             GTest::gtest_main
             uncertainties
         )
+        target_link_libraries(test_correlation PRIVATE
+            GTest::gtest_main
+            uncertainties
+        )
         add_test(NAME test_udouble COMMAND test_udouble)
         add_test(NAME test_umath COMMAND test_umath)
+        add_test(NAME test_correlation COMMAND test_correlation)
 
         # Eigen tests (only if Eigen is available)
-        set(TEST_TARGETS test_udouble test_umath)
+        set(TEST_TARGETS test_udouble test_umath test_correlation)
         if (Eigen3_FOUND)
             add_executable(test_eigen tests/test_eigen.cpp)
             target_link_libraries(test_eigen PRIVATE

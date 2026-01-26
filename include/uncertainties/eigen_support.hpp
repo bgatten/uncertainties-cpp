@@ -41,10 +41,10 @@ struct NumTraits<uncertainties::udouble> : NumTraits<double> {
         IsComplex = 0,
         IsInteger = 0,
         IsSigned = 1,
-        RequireInitialization = 0,
-        ReadCost = 2,      // Two doubles to read
-        AddCost = 6,       // Addition plus sqrt for uncertainty
-        MulCost = 8        // Multiplication plus uncertainty calculation
+        RequireInitialization = 1,  // Derivative map needs initialization
+        ReadCost = 10,     // Nominal + derivative map access
+        AddCost = 20,      // Map merge operations
+        MulCost = 30       // Map operations with multiplication
     };
 
     static inline Real epsilon() {
