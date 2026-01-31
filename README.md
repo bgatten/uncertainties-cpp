@@ -1,9 +1,10 @@
 # Uncertainties Library
 
-This project provides a C++ implementation of a `udouble` class for handling values with uncertainties, similar to Python's `uncertainties` package. The `udouble` class supports automatic error propagation for arithmetic operations.
+This project provides a C++ implementation of a `udouble` class for handling values with uncertainties, similar to Python's `uncertainties` package. The `udouble` class supports automatic error propagation with correlation tracking, so expressions like `x - x` correctly yield `0 ± 0`.
 
 ## Features
 
+- **Correlation tracking**: Variables are tracked through expressions so that `x - x = 0 ± 0` and `x + x = 2x ± 2σ` (not `σ√2`).
 - Create objects with nominal values and standard deviations.
 - Implicit conversion from `double` (zero uncertainty).
 - Arithmetic operations (`+`, `-`, `*`, `/`) with automatic error propagation.
@@ -20,7 +21,6 @@ This project provides a C++ implementation of a `udouble` class for handling val
   - Exponential/logarithmic: `exp()`, `log()`, `log10()`, `sqrt()`
   - Other: `abs()`, `hypot()`
 - Multiple output formats: default, scientific notation, compact notation.
-- `constexpr` support for compile-time evaluation.
 - Eigen matrix library integration (optional).
 - Includes unit tests and examples.
 
@@ -91,6 +91,50 @@ int main() {
     uncertainties::udouble c = a + b; // 3.0 ± sqrt(0.1^2 + 0.2^2)
 
     std::cout << "c = " << c << std::endl; // Output: 3.0 ± 0.223606
+
+    return 0;
+}
+```
+
+### Example: Correlation Tracking
+
+The library tracks correlations between variables automatically. When the same variable appears multiple times in an expression, the uncertainties are correctly correlated:
+
+```cpp
+#include <iostream>
+#include "uncertainties/udouble.hpp"
+#include "uncertainties/umath.hpp"
+
+int main() {
+    uncertainties::udouble x(10.0, 0.5);
+    uncertainties::udouble y(20.0, 1.0);
+
+    // Correlated: x - x = 0 with zero uncertainty
+    uncertainties::udouble zero = x - x;
+    std::cout << "x - x = " << zero << std::endl;  // 0 ± 0
+
+    // Correlated: x + x = 2x with doubled uncertainty
+    uncertainties::udouble doubled = x + x;
+    std::cout << "x + x = " << doubled << std::endl;  // 20 ± 1
+
+    // Mixed: (x + y) - x = y (x cancels out)
+    uncertainties::udouble result = (x + y) - x;
+    std::cout << "(x + y) - x = " << result << std::endl;  // 20 ± 1
+
+    // Math functions preserve correlations
+    uncertainties::udouble s = uncertainties::sin(x);
+    std::cout << "sin(x) - sin(x) = " << (s - s) << std::endl;  // 0 ± 0
+
+    // Trig identity: sin²(x) + cos²(x) = 1 with zero uncertainty
+    uncertainties::udouble x2(0.5, 0.1);
+    uncertainties::udouble identity =
+        uncertainties::sin(x2) * uncertainties::sin(x2) +
+        uncertainties::cos(x2) * uncertainties::cos(x2);
+    std::cout << "sin²+cos² = " << identity << std::endl;  // 1 ± 0
+
+    // Create an independent copy (different variable, same value/stddev)
+    uncertainties::udouble x_copy = x.independent_copy();
+    std::cout << "x - x_copy = " << (x - x_copy) << std::endl;  // 0 ± 0.707
 
     return 0;
 }
