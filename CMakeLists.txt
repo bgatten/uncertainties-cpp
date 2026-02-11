@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.10)
 #  Project Setup
 # ----------------------------------------------------
 project(uncertainties
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "C++ library providing a udouble type for uncertainty propagation"
     LANGUAGES CXX
 )
